@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Spoteefy</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .dashboard-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            margin: 15px 0;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+        .navbar {
+            background: rgba(0, 0, 0, 0.2) !important;
+            backdrop-filter: blur(10px);
+        }
+        .track-item {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 15px;
+            margin: 10px 0;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="{{ url_for('main.dashboard') }}">
+                <i class="fab fa-spotify"></i> Spoteefy
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="{{ url_for('main.discover') }}">Discover</a>
+                <a class="nav-link" href="{{ url_for('main.analyze') }}">Analyze</a>
+                <a class="nav-link" href="{{ url_for('main.playlists') }}">Playlists</a>
+                <a class="nav-link" href="{{ url_for('auth.logout') }}">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <!-- User Profile -->
+        {% if user %}
+        <div class="dashboard-card">
+            <div class="row align-items-center">
+                <div class="col-md-2">
+                    {% if user.images %}
+                    <img src="{{ user.images[0].url }}" class="img-fluid rounded-circle" alt="Profile">
+                    {% else %}
+                    <div class="bg-secondary rounded-circle d-flex align-items-center justify-content-center" style="width: 100px; height: 100px;">
+                        <i class="fas fa-user fa-2x text-white"></i>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="col-md-10">
+                    <h2>Welcome, {{ user.display_name }}!</h2>
+                    <p class="mb-0">Followers: {{ user.followers.total if user.followers else 0 }}</p>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="row">
+            <!-- Recent Tracks -->
+            <div class="col-md-6">
+                <div class="dashboard-card">
+                    <h4><i class="fas fa-clock"></i> Recently Played</h4>
+                    {% if recent_tracks and recent_tracks.get('items') %}
+                        {% for item in recent_tracks['items'][:5] %}
+                        <div class="track-item">
+                            <div class="row align-items-center">
+                                <div class="col-2">
+                                    <img src="{{ item.track.album.images[0].url if item.track.album.images else '' }}" 
+                                         class="img-fluid rounded" alt="Album" style="width: 50px; height: 50px;">
+                                </div>
+                                <div class="col-10">
+                                    <h6 class="mb-1">{{ item.track.name }}</h6>
+                                    <small>{{ item.track.artists[0].name }}</small>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p>No recent tracks found.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Top Artists -->
+            <div class="col-md-6">
+                <div class="dashboard-card">
+                    <h4><i class="fas fa-star"></i> Top Artists</h4>
+                    {% if top_artists and top_artists.get('items') %}
+                        {% for artist in top_artists['items'][:5] %}
+                        <div class="track-item">
+                            <div class="row align-items-center">
+                                <div class="col-2">
+                                    {% if artist.images %}
+                                    <img src="{{ artist.images[0].url }}" 
+                                         class="img-fluid rounded-circle" alt="Artist" style="width: 50px; height: 50px;">
+                                    {% else %}
+                                    <div class="bg-secondary rounded-circle d-flex align-items-center justify-content-center" 
+                                         style="width: 50px; height: 50px;">
+                                        <i class="fas fa-music text-white"></i>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-10">
+                                    <h6 class="mb-1">{{ artist.name }}</h6>
+                                    <small>{{ artist.genres[0] if artist.genres else 'Unknown genre' }}</small>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p>No top artists found.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="dashboard-card">
+            <h4><i class="fas fa-magic"></i> Quick Actions</h4>
+            <div class="row">
+                <div class="col-md-3">
+                    <a href="{{ url_for('main.discover') }}" class="btn btn-outline-light w-100 mb-2">
+                        <i class="fas fa-compass"></i> Discover Music
+                    </a>
+                </div>
+                <div class="col-md-3">
+                    <a href="{{ url_for('main.analyze') }}" class="btn btn-outline-light w-100 mb-2">
+                        <i class="fas fa-chart-line"></i> Analyze Taste
+                    </a>
+                </div>
+                <div class="col-md-3">
+                    <a href="{{ url_for('main.playlists') }}" class="btn btn-outline-light w-100 mb-2">
+                        <i class="fas fa-list"></i> My Playlists
+                    </a>
+                </div>
+                <div class="col-md-3">
+                    <button class="btn btn-outline-light w-100 mb-2" onclick="createPlaylist()">
+                        <i class="fas fa-plus"></i> Create AI Playlist
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function createPlaylist() {
+            const theme = prompt("Enter playlist theme (e.g., 'Chill Vibes', 'Workout', 'Study'):");
+            if (theme) {
+                fetch('/api/create-playlist', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        theme: theme,
+                        tracks_count: 20
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert(`Playlist "${data.playlist.name}" created successfully!`);
+                        window.location.href = '/playlists';
+                    } else {
+                        alert('Failed to create playlist: ' + data.error);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Failed to create playlist');
+                });
+            }
+        }
+    </script>
+</body>
+</html>
