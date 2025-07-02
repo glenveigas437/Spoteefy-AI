@@ -1,4 +1,4 @@
-# 🎵 Spotify AI App
+# 🎵 Spoteefy - Now powered by AI
 
 A modern, AI-powered music discovery platform built with Flask and Spotify Web API.
 
